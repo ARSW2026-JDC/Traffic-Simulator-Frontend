@@ -5,10 +5,15 @@ import MapView from '../components/MapView/MapView';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Navbar from '../components/Navbar/Navbar';
 
+import { useAuthStore } from '../stores/authStore';
+
 export default function SimulationPage() {
+  const { user } = useAuthStore();
   const simSocket = useSimulationSocket();
   const chatSocket = useChatSocket();
   const historySocket = useHistorySocket();
+
+  // Los hooks de sockets ahora dependen de user, así que solo se conectan si user existe
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-surface">

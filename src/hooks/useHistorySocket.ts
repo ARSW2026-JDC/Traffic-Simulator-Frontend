@@ -9,10 +9,12 @@ const GATEWAY = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3000';
 
 export function useHistorySocket() {
   const socketRef = useRef<Socket | null>(null);
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const { addEntry, setEntries, setLoading } = useHistoryStore();
 
   useEffect(() => {
+    if (!token || !user) return;
+
     setLoading(true);
     getHistory(50)
       .then((data) => {
@@ -23,7 +25,7 @@ export function useHistorySocket() {
 
     const socket = io(`${GATEWAY}/history`, {
       path: '/nrt/socket.io',
-      auth: { token: token || '' },
+      auth: { token },
       transports: ['websocket', 'polling'],
     });
 
@@ -34,7 +36,7 @@ export function useHistorySocket() {
     return () => {
       socket.disconnect();
     };
-  }, [token]);
+  }, [token, user]);
 
   return socketRef;
 }

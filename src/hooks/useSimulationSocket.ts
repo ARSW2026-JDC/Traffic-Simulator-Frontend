@@ -8,13 +8,15 @@ const GATEWAY = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3000';
 
 export function useSimulationSocket() {
   const socketRef = useRef<Socket | null>(null);
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const { setFullState, applyDelta, setConnected, setRoutes } = useSimulationStore();
 
   useEffect(() => {
+    if (!token || !user) return;
+
     const socket = io(`${GATEWAY}/simulation`, {
       path: '/sim/socket.io',
-      auth: { token: token || '' },
+      auth: { token },
       transports: ['websocket', 'polling'],
     });
 
@@ -43,7 +45,7 @@ export function useSimulationSocket() {
     return () => {
       socket.disconnect();
     };
-  }, [token]);
+  }, [token, user]);
 
   return socketRef;
 }

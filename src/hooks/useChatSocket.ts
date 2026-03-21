@@ -9,17 +9,19 @@ const GATEWAY = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3000';
 
 export function useChatSocket() {
   const socketRef = useRef<Socket | null>(null);
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const { addMessage, setMessages, setConnected } = useChatStore();
 
   useEffect(() => {
-    getChatMessages(50)
+    if (!token || !user) return;
+
+    getChatMessages(100)
       .then(setMessages)
       .catch(() => {});
 
     const socket = io(`${GATEWAY}/chat`, {
       path: '/nrt/socket.io',
-      auth: { token: token || '' },
+      auth: { token },
       transports: ['websocket', 'polling'],
     });
 
@@ -32,7 +34,7 @@ export function useChatSocket() {
     return () => {
       socket.disconnect();
     };
-  }, [token]);
+  }, [token, user]);
 
   return socketRef;
 }
