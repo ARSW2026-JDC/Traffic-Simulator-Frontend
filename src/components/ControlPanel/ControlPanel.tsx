@@ -1,226 +1,166 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { RefObject } from 'react';
 import type { Socket } from 'socket.io-client';
 import { useSimulationStore } from '../../stores/simulationStore';
 import { useAuthStore } from '../../stores/authStore';
-import type { Vehicle, TrafficLight } from '../../types';
 
 interface Props {
   simSocket: RefObject<Socket | null>;
+  zoom: number;
+  onZoomChange: (z: number) => void;
+  showVehicles: boolean;
+  showLights: boolean;
+  showSpecs: boolean;
+  onToggleVehicles: () => void;
+  onToggleLights: () => void;
+  onToggleSpecs: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export default function ControlPanel({ simSocket }: Props) {
-  const { selectedId, selectedType, vehicles, trafficLights, deselect } = useSimulationStore();
+export default function ControlPanel({
+  simSocket, zoom, onZoomChange,
+  showVehicles, showLights, showSpecs,
+  onToggleVehicles, onToggleLights, onToggleSpecs,
+  isCollapsed = false,
+  onToggleCollapse = () => {},
+}: Props) {
+  const { trafficLights } = useSimulationStore();
   const { user } = useAuthStore();
   const canEdit = user?.role === 'USER' || user?.role === 'ADMIN';
 
-  const entity =
-    selectedId && selectedType === 'vehicle'
-      ? vehicles[selectedId]
-      : selectedId && selectedType === 'trafficLight'
-        ? trafficLights[selectedId]
-        : null;
+  const [globalSpeed, setGlobalSpeed] = useState(60);
+  const [selectedLight, setSelectedLight] = useState<string | null>(null);
 
-  if (!entity) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-        <div className="text-4xl mb-3">🗺️</div>
-        <p className="text-muted text-sm">Click on a vehicle or traffic light on the map to select it.</p>
-        {!canEdit && (
-          <p className="text-xs text-slate-500 mt-2">Guest mode — view only.</p>
-        )}
-      </div>
-    );
-  }
+  const lightList = Object.values(trafficLights);
 
-  return (
-    <div className="h-full overflow-y-auto p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-semibold text-white text-sm">{entity.name}</h3>
-          <p className="text-xs text-muted capitalize">{selectedType}</p>
-        </div>
-        <button
-          onClick={deselect}
-          className="text-muted hover:text-white text-xs transition-colors"
-        >
-          Deselect
-        </button>
-      </div>
+  const handleAddVehicle = () => {
+    simSocket.current?.emit('vehicle:add', { speed: globalSpeed });
+  };
 
-      {selectedType === 'vehicle' && (
-        <VehicleControls vehicle={entity as Vehicle} simSocket={simSocket} canEdit={canEdit} />
-      )}
-      {selectedType === 'trafficLight' && (
-        <LightControls light={entity as TrafficLight} simSocket={simSocket} canEdit={canEdit} />
-      )}
-    </div>
-  );
-}
+  const handleRemoveVehicle = () => {
+    simSocket.current?.emit('vehicle:remove', {});
+  };
 
-function VehicleControls({
-  vehicle,
-  simSocket,
-  canEdit,
-}: {
-  vehicle: Vehicle;
-  simSocket: RefObject<Socket | null>;
-  canEdit: boolean;
-}) {
-  const [speed, setSpeed] = useState(vehicle.speed);
-  const [color, setColor] = useState(vehicle.color);
+  const handleAddLight = () => {
+    simSocket.current?.emit('light:add', {});
+  };
 
-  useEffect(() => {
-    setSpeed(vehicle.speed);
-    setColor(vehicle.color);
-  }, [vehicle.id]);
-
-  const apply = () => {
-    simSocket.current?.emit('vehicle:update', { id: vehicle.id, speed, color });
+  const handleRemoveLight = () => {
+    if (!selectedLight) return;
+    simSocket.current?.emit('light:remove', { id: selectedLight });
+    setSelectedLight(null);
   };
 
   return (
-    <div className="space-y-5">
-      <div className="bg-surface rounded-lg p-3 space-y-1">
-        <p className="text-xs text-muted">Status</p>
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              vehicle.status === 'moving'
-                ? 'bg-green-400'
-                : vehicle.status === 'waiting'
-                  ? 'bg-yellow-400'
-                  : 'bg-red-400'
-            }`}
-          />
-          <span className="text-sm text-white capitalize">{vehicle.status}</span>
-        </div>
-      </div>
+    <aside className={`sim-left ${isCollapsed ? 'collapsed' : ''}`}>
+      <button className="sim-collapse-btn" onClick={onToggleCollapse} title={isCollapsed ? 'Expandir' : 'Contraer'}>
+        {isCollapsed ? '→' : '←'}
+      </button>
 
-      <div>
-        <label className="text-xs text-muted block mb-2">
-          Speed — <span className="text-white">{speed} km/h</span>
-        </label>
+      {/* ── CONTROLES DEL MAPA ── */}
+      <div className="sim-section">
+        <p className="sim-section-title">Controles del mapa</p>
+
+        <label className="sim-label">Niveles del zoom</label>
         <input
           type="range"
-          min={5}
-          max={120}
-          value={speed}
-          disabled={!canEdit}
-          onChange={(e) => setSpeed(Number(e.target.value))}
-          className="w-full accent-blue-500"
+          min={10}
+          max={18}
+          value={zoom}
+          onChange={(e) => onZoomChange(Number(e.target.value))}
+          className="sim-slider"
         />
-        <div className="flex justify-between text-xs text-muted mt-1">
-          <span>5</span>
-          <span>120 km/h</span>
-        </div>
-      </div>
 
-      <div>
-        <label className="text-xs text-muted block mb-2">Color</label>
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            value={color}
-            disabled={!canEdit}
-            onChange={(e) => setColor(e.target.value)}
-            className="w-10 h-10 rounded cursor-pointer border border-border bg-surface"
-          />
-          <span className="text-sm text-white font-mono">{color}</span>
-        </div>
-      </div>
-
-      {canEdit && (
-        <button
-          onClick={apply}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
-        >
-          Apply Changes
-        </button>
-      )}
-    </div>
-  );
-}
-
-function LightControls({
-  light,
-  simSocket,
-  canEdit,
-}: {
-  light: TrafficLight;
-  simSocket: RefObject<Socket | null>;
-  canEdit: boolean;
-}) {
-  const [green, setGreen] = useState(light.greenDuration / 1000);
-  const [yellow, setYellow] = useState(light.yellowDuration / 1000);
-  const [red, setRed] = useState(light.redDuration / 1000);
-
-  useEffect(() => {
-    setGreen(light.greenDuration / 1000);
-    setYellow(light.yellowDuration / 1000);
-    setRed(light.redDuration / 1000);
-  }, [light.id]);
-
-  const apply = () => {
-    simSocket.current?.emit('light:update', {
-      id: light.id,
-      greenDuration: green * 1000,
-      yellowDuration: yellow * 1000,
-      redDuration: red * 1000,
-    });
-  };
-
-  const stateColors: Record<string, string> = {
-    green: 'bg-green-500',
-    yellow: 'bg-yellow-500',
-    red: 'bg-red-500',
-  };
-
-  return (
-    <div className="space-y-5">
-      <div className="bg-surface rounded-lg p-3 flex items-center gap-3">
-        <div className={`w-4 h-4 rounded-full ${stateColors[light.state]}`} />
-        <div>
-          <p className="text-sm text-white capitalize">{light.state}</p>
-          <p className="text-xs text-muted">{Math.round(light.stateTimer / 1000)}s elapsed</p>
-        </div>
-      </div>
-
-      {(
-        [
-          { label: 'Green duration', value: green, set: setGreen, color: 'accent-green-500' },
-          { label: 'Yellow duration', value: yellow, set: setYellow, color: 'accent-yellow-500' },
-          { label: 'Red duration', value: red, set: setRed, color: 'accent-red-500' },
-        ] as const
-      ).map(({ label, value, set, color }) => (
-        <div key={label}>
-          <label className="text-xs text-muted block mb-2">
-            {label} — <span className="text-white">{value}s</span>
+        <label className="sim-label" style={{ marginTop: '.5rem' }}>Visibilidad de capas</label>
+        <div className="sim-checks">
+          <label className="sim-check-row">
+            <input type="checkbox" checked={showVehicles} onChange={onToggleVehicles} />
+            Capa de vehículos
           </label>
+          <label className="sim-check-row">
+            <input type="checkbox" checked={showLights} onChange={onToggleLights} />
+            Capa de semáforos
+          </label>
+          <label className="sim-check-row">
+            <input type="checkbox" checked={showSpecs} onChange={onToggleSpecs} />
+            Capa de especificaciones
+          </label>
+        </div>
+      </div>
+
+      {/* ── CONFIGURACIÓN DE VEHÍCULOS ── */}
+      <div className="sim-section">
+        <p className="sim-section-title">Configuración de vehículos</p>
+
+        <label className="sim-label">Velocidad promedio</label>
+        <div className="sim-speed-box">{globalSpeed} km/h</div>
+
+        <div className="sim-speed-row">
+          <button
+            className="sim-speed-btn"
+            onClick={() => setGlobalSpeed((v) => Math.max(5, v - 5))}
+            disabled={!canEdit}
+          >−</button>
           <input
             type="range"
-            min={2}
+            min={5}
             max={120}
-            value={value}
+            step={5}
+            value={globalSpeed}
+            onChange={(e) => setGlobalSpeed(Number(e.target.value))}
             disabled={!canEdit}
-            onChange={(e) => (set as any)(Number(e.target.value))}
-            className={`w-full ${color}`}
+            style={{ flex: 1, accentColor: '#2258B1' }}
           />
-          <div className="flex justify-between text-xs text-muted mt-1">
-            <span>2s</span>
-            <span>120s</span>
-          </div>
+          <button
+            className="sim-speed-btn"
+            onClick={() => setGlobalSpeed((v) => Math.min(120, v + 5))}
+            disabled={!canEdit}
+          >+</button>
         </div>
-      ))}
 
-      {canEdit && (
-        <button
-          onClick={apply}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
-        >
-          Apply Changes
-        </button>
-      )}
-    </div>
+        <div className="sim-btn-row">
+          <button className="sim-btn" onClick={handleAddVehicle} disabled={!canEdit}>
+            Añadir
+          </button>
+          <button className="sim-btn" onClick={handleRemoveVehicle} disabled={!canEdit}>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      {/* ── CONFIGURACIÓN DE SEMÁFOROS ── */}
+      <div className="sim-section">
+        <p className="sim-section-title">Configuración de semáforos</p>
+
+        <div className="sim-semaphore-list">
+          {lightList.length === 0 ? (
+            <span style={{ fontSize: '.75rem', color: '#9CA3AF', padding: '.2rem' }}>
+              Sin semáforos activos
+            </span>
+          ) : (
+            lightList.map((l) => (
+              <button
+                key={l.id}
+                className={`sim-semaphore-item ${selectedLight === l.id ? 'selected' : ''}`}
+                onClick={() => setSelectedLight(l.id === selectedLight ? null : l.id)}
+              >
+                {l.name || `Semáforo ${l.id.slice(0, 8)}`}
+              </button>
+            ))
+          )}
+        </div>
+
+        <div className="sim-btn-row">
+          <button className="sim-btn" onClick={handleAddLight} disabled={!canEdit}>
+            Añadir
+          </button>
+          <button className="sim-btn" onClick={handleRemoveLight} disabled={!canEdit || !selectedLight}>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+    </aside>
   );
 }
