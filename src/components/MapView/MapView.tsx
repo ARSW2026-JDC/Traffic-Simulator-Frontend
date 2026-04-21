@@ -25,6 +25,22 @@ function Markers({ simSocket }: { simSocket: RefObject<Socket | null> }) {
   );
 }
 
+function CustomZoomControls() {
+  const map = useMap();
+
+  const zoomIn = () => map.setZoom(map.getZoom() + 1);
+  const zoomOut = () => map.setZoom(map.getZoom() - 1);
+  const resetView = () => map.setView([4.60, -74.0836], 13);
+
+  return (
+    <div className="sim-map-zoom-controls" role="group" aria-label="Controles de zoom">
+      <button onClick={zoomIn} type="button">+</button>
+      <button onClick={zoomOut} type="button">-</button>
+      <button onClick={resetView} type="button">⌖</button>
+    </div>
+  );
+}
+
 function BboxSelector() {
   const [start, setStart] = useState<{ lat: number; lng: number } | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -91,7 +107,7 @@ export default function MapView({ simSocket }: Props) {
       center={[4.60, -74.0836]}
       zoom={13}
       className="w-full h-full"
-      zoomControl={true}
+      zoomControl={false}
     >
       <TileLayer
         url={basemap.url}
@@ -99,6 +115,7 @@ export default function MapView({ simSocket }: Props) {
         subdomains={basemap.subdomains}
         maxZoom={basemap.maxZoom ?? 19}
       />
+      <CustomZoomControls />
       <BboxSelector />
       <Markers simSocket={simSocket} />
     </MapContainer>
