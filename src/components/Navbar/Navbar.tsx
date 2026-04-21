@@ -12,7 +12,7 @@ interface Props {
 
 export default function Navbar({ simSocket: _simSocket }: Props) {
   const { user, logout } = useAuthStore();
-  const { isConnected, tick } = useSimulationStore();
+  const { isConnected, } = useSimulationStore();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -39,7 +39,6 @@ export default function Navbar({ simSocket: _simSocket }: Props) {
           className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
         />
         <span className="text-xs text-muted">{isConnected ? 'Connected' : 'Disconnected'}</span>
-        <span className="text-xs text-muted ml-2">tick #{tick}</span>
       </div>
 
       <div className="ml-auto flex items-center gap-4">
