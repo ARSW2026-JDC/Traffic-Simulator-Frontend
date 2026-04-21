@@ -463,7 +463,7 @@
   border-radius: 10px;
   border: 1px solid #e5e7eb;
   background: #ffffff;
-  color: #f5a623;
+  color: var(--s-blue);
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
@@ -471,7 +471,11 @@
 }
 
 .sim-map-zoom-controls button:hover {
-  background: #fffaf0;
+  background: #f3f4f6;
+}
+
+.sim-map-zoom-controls .sim-map-zoom-reset {
+  color: #007FBD;
 }
 
 /* ── RIGHT PANEL ── */
@@ -716,7 +720,7 @@
     border-top: 1px solid var(--s-border);
     padding: 0.6rem;
     background: #fff;
-    color: #f5a623;
+    color: var(--s-blue);
     font-weight: 700;
     cursor: pointer;
   }

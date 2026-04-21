@@ -35,8 +35,8 @@ function CustomZoomControls() {
   return (
     <div className="sim-map-zoom-controls" role="group" aria-label="Controles de zoom">
       <button onClick={zoomIn} type="button">+</button>
+      <button onClick={resetView} type="button" className="sim-map-zoom-reset">⌖</button>
       <button onClick={zoomOut} type="button">-</button>
-      <button onClick={resetView} type="button">⌖</button>
     </div>
   );
 }
