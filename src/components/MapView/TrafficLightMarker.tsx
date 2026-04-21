@@ -23,7 +23,7 @@ export default function TrafficLightMarker({ light }: Props) {
         color: selected ? '#111827' : '#374151',
         fillColor: STATE_COLORS[light.state],
         fillOpacity: 0.95,
-        weight: selected ? 2 : 1.5,
+        weight: selected ? 1.5 : 1,
       }}
       eventHandlers={{
         click: () => selectEntity(light.id, 'trafficLight'),
