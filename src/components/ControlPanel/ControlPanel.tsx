@@ -87,7 +87,7 @@ export default function ControlPanel({ simSocket }: Props) {
         <select
           value={activeSimId ?? ''}
           onChange={(e) => selectSimulation(e.target.value)}
-          className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-xs text-gray-600 focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-white border border-[var(--s-border)] rounded-lg text-xs text-[var(--s-text)] focus:outline-none focus:border-[var(--s-blue)]"
         >
           <option value="">Sin simulacion</option>
           {simulations.map((sim) => (
@@ -97,7 +97,7 @@ export default function ControlPanel({ simSocket }: Props) {
           ))}
         </select>
         {simulations.length === 0 && (
-          <p className="text-xs text-muted">No hay simulaciones activas.</p>
+          <p className="text-xs text-[var(--s-sub)]">No hay simulaciones activas.</p>
         )}
       </div>
 
@@ -106,7 +106,7 @@ export default function ControlPanel({ simSocket }: Props) {
         <select
           value={basemapId}
           onChange={(e) => handleBasemapChange(e.target.value)}
-          className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-xs text-gray-600 focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-white border border-[var(--s-border)] rounded-lg text-xs text-[var(--s-text)] focus:outline-none focus:border-[var(--s-blue)]"
         >
           {BASEMAPS.map((entry) => (
             <option key={entry.id} value={entry.id}>
@@ -119,7 +119,7 @@ export default function ControlPanel({ simSocket }: Props) {
       {!entity ? (
         <div className="flex flex-col items-center justify-center p-6 text-center">
           <div className="text-4xl mb-3">🗺️</div>
-          <p className="text-muted text-sm">Click on a vehicle or traffic light on the map to select it.</p>
+          <p className="text-[var(--s-sub)] text-sm">Click on a vehicle or traffic light on the map to select it.</p>
           {!canEdit && (
             <p className="text-xs text-slate-500 mt-2">Guest mode — view only.</p>
           )}
@@ -129,11 +129,11 @@ export default function ControlPanel({ simSocket }: Props) {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-semibold text-gray-600 text-sm">{entity.name}</h3>
-              <p className="text-xs text-muted capitalize">{selectedType}</p>
+              <p className="text-xs text-[var(--s-sub)] capitalize">{selectedType}</p>
             </div>
             <button
               onClick={deselect}
-              className="text-muted hover:text-gray-600 text-xs transition-colors"
+              className="text-[var(--s-sub)] hover:text-[var(--s-text)] text-xs transition-colors"
             >
               Deselect
             </button>
@@ -199,8 +199,8 @@ function VehicleControls({
 
   return (
     <div className="space-y-5">
-      <div className="bg-surface rounded-lg p-3 space-y-1">
-        <p className="text-xs text-muted">Status</p>
+      <div className="bg-[var(--s-gray)] rounded-lg p-3 space-y-1">
+        <p className="text-xs text-[var(--s-sub)]">Status</p>
         <div className="flex items-center gap-2">
           <div
             className={`w-2 h-2 rounded-full ${
@@ -216,7 +216,7 @@ function VehicleControls({
       </div>
 
       <div>
-        <label className="text-xs text-muted block mb-2">
+        <label className="text-xs text-[var(--s-sub)] block mb-2">
           Speed — <span className="text-gray-600">{speed.toFixed(2)} km/h</span>
         </label>
         <input
@@ -228,33 +228,33 @@ function VehicleControls({
           onChange={(e) => setSpeed(Number(e.target.value))}
           className="w-full accent-blue-500"
         />
-        <div className="flex justify-between text-xs text-muted mt-1">
+        <div className="flex justify-between text-xs text-[var(--s-sub)] mt-1">
           <span>5</span>
           <span>120 km/h</span>
         </div>
       </div>
 
       <div>
-        <label className="text-xs text-muted block mb-2">Color</label>
+        <label className="text-xs text-[var(--s-sub)] block mb-2">Color</label>
         <div className="flex items-center gap-3">
           <input
             type="color"
             value={color}
             disabled={!canEdit}
             onChange={(e) => setColor(e.target.value)}
-            className="w-10 h-10 rounded cursor-pointer border border-border bg-surface"
+            className="w-10 h-10 rounded cursor-pointer border border-[var(--s-border)] bg-white"
           />
           <span className="text-sm text-gray-600 font-mono">{color}</span>
         </div>
       </div>
 
       <div>
-        <label className="text-xs text-muted block mb-2">Profile</label>
+        <label className="text-xs text-[var(--s-sub)] block mb-2">Profile</label>
         <select
           value={profile}
           disabled={!canEdit}
           onChange={(e) => setProfile(e.target.value as typeof profile)}
-          className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-gray-600 focus:outline-none"
+          className="w-full px-3 py-2 bg-white border border-[var(--s-border)] rounded-lg text-sm text-[var(--s-text)] focus:outline-none focus:border-[var(--s-blue)]"
         >
           <option value="aggressive">Aggressive</option>
           <option value="normal">Normal</option>
@@ -267,7 +267,7 @@ function VehicleControls({
       {canEdit && (
         <button
           onClick={apply}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-gray-600 text-sm rounded-lg transition-colors"
+          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
         >
           Apply Changes
         </button>
@@ -338,7 +338,7 @@ function LightControls({
 
   return (
     <div className="space-y-5">
-      <div className="bg-surface rounded-lg p-3 flex items-center gap-3">
+      <div className="bg-[var(--s-gray)] rounded-lg p-3 flex items-center gap-3">
         <div className={`w-4 h-4 rounded-full ${stateColors[light.state]}`} />
         <div>
           <p className="text-sm text-gray-600 capitalize">{light.state}</p>
@@ -346,14 +346,14 @@ function LightControls({
       </div>
 
       <div>
-        <label className="text-xs text-muted block mb-2">Phase (optional)</label>
+        <label className="text-xs text-[var(--s-sub)] block mb-2">Phase (optional)</label>
         <select
           value={phase}
           disabled={!canEdit}
           onChange={(e) =>
             setPhase(e.target.value === '' ? '' : Number(e.target.value))
           }
-          className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-gray-600 focus:outline-none"
+          className="w-full px-3 py-2 bg-white border border-[var(--s-border)] rounded-lg text-sm text-[var(--s-text)] focus:outline-none focus:border-[var(--s-blue)]"
         >
           <option value="">No change</option>
           <option value={0}>Green (0)</option>
@@ -370,7 +370,7 @@ function LightControls({
         ] as const
       ).map(({ label, value, set, color }) => (
         <div key={label}>
-          <label className="text-xs text-muted block mb-2">
+          <label className="text-xs text-[var(--s-sub)] block mb-2">
             {label} — <span className="text-gray-600">{value}s</span>
           </label>
           <input
@@ -382,7 +382,7 @@ function LightControls({
             onChange={(e) => (set as any)(Number(e.target.value))}
             className={`w-full ${color}`}
           />
-          <div className="flex justify-between text-xs text-muted mt-1">
+          <div className="flex justify-between text-xs text-[var(--s-sub)] mt-1">
             <span>2s</span>
             <span>120s</span>
           </div>
@@ -392,7 +392,7 @@ function LightControls({
       {canEdit && (
         <button
           onClick={apply}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-black text-sm rounded-lg transition-colors"
+          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
         >
           Apply Changes
         </button>
