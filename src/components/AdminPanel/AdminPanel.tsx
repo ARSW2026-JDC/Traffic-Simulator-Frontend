@@ -422,7 +422,7 @@ function SimulationPanel({ simSocket }: { simSocket: RefObject<Socket | null> })
             <input
               value={importMapId}
               onChange={(e) => setImportMapId(e.target.value)}
-              placeholder="funza"
+              placeholder="Nombre del mapa sin extension"
               className="w-full px-3 py-2 bg-white border border-[var(--s-border)] rounded-lg text-xs text-[var(--s-text)] focus:outline-none focus:border-[#2258B1]"
             />
           </div>
