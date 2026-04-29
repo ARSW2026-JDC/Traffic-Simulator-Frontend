@@ -44,7 +44,7 @@ export async function getAllUsers() {
 export async function getChatMessages(limit = 50, cursor?: string) {
   const params: any = { limit: String(limit) };
   if (cursor) params.cursor = cursor;
-  const res = await api.get('/api/chat/messages', { params });
+  const res = await api.get('/chat/messages', { params });
   return res.data;
 }
 
